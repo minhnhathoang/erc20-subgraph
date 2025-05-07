@@ -1,27 +1,18 @@
-type Token @entity {
+type Token @entity(immutable: false) {
   id: ID!
   name: String!
   symbol: String!
   decimals: Int!
-  balances: [TokenBalance!]! @derivedFrom(field: "token")
   approvals: [TokenApproval!]! @derivedFrom(field: "token")
 }
 
-type Account @entity {
+type Account @entity(immutable: false) {
   id: ID!
-  balances: [TokenBalance!]! @derivedFrom(field: "account")
   incomingApprovals: [TokenApproval!]! @derivedFrom(field: "spenderAccount")
   outgoingApprovals: [TokenApproval!]! @derivedFrom(field: "ownerAccount")
 }
 
-type TokenBalance @entity {
-  id: ID!
-  token: Token!
-  account: Account!
-  value: BigDecimal!
-}
-
-type TokenApproval @entity {
+type TokenApproval @entity(immutable: false) {
   id: ID!
   token: Token!
   ownerAccount: Account!
