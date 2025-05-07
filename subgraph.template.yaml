@@ -1,5 +1,7 @@
 specVersion: 1.3.0
 description: ERC20 Subgraph
+indexerHints:
+  prune: auto # should limit the number of historical blocks to retain, based on the query interval and block time
 schema:
   file: ./schema.graphql
 dataSources:
