@@ -1,7 +1,7 @@
 {
-  "name": "erc20-approval",
+  "name": "erc20-subgraph",
   "version": "0.0.1",
-  "description": "Subgraph for indexing all ERC20 token approvals",
+  "description": "Subgraph for indexing all ERC20 token balances and approvals",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",

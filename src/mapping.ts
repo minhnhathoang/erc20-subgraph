@@ -1,7 +1,9 @@
 import {BigDecimal, ethereum} from "@graphprotocol/graph-ts";
 
-import {Approval, ERC20} from "../generated/ERC20/ERC20";
-import {Account, Token, TokenApproval} from "../generated/schema";
+import {Approval, ERC20, Transfer} from "../generated/ERC20/ERC20";
+import {Account, Token, TokenApproval, TokenBalance} from "../generated/schema";
+
+const zeroAddress = '0x0000000000000000000000000000000000000000';
 
 function loadOrCreateAccount(address: string): Account | null {
     let account = Account.load(address);
@@ -77,5 +79,48 @@ export function handleApproval(event: Approval): void {
         tokenApproval.spenderAccount = spenderAccount.id;
     }
     tokenApproval.value = value;
+    tokenApproval.blockNumber = event.block.number;
     tokenApproval.save();
+}
+
+export function handleTransfer(event: Transfer): void {
+    let token = loadOrCreateToken(event);
+    if (!token) {
+        return;
+    }
+
+    let from = event.params.from.toHex();
+    let to = event.params.to.toHex();
+    let value = event.params.value.toBigDecimal();
+
+    let fromAccount = loadOrCreateAccount(from);
+    let toAccount = loadOrCreateAccount(to);
+
+    if (!fromAccount || !toAccount) {
+        return;
+    }
+
+    if (fromAccount.id != zeroAddress) {
+        let fromTokenBalance = TokenBalance.load(token.id + "-" + fromAccount.id);
+        if (!fromTokenBalance) {
+            fromTokenBalance = new TokenBalance(token.id + "-" + fromAccount.id);
+            fromTokenBalance.token = token.id;
+            fromTokenBalance.account = fromAccount.id;
+            fromTokenBalance.value = BigDecimal.fromString("0");
+        }
+        fromTokenBalance.value = fromTokenBalance.value.minus(value);
+        fromTokenBalance.blockNumber = event.block.number;
+        fromTokenBalance.save();
+    }
+
+    let toTokenBalance = TokenBalance.load(token.id + "-" + toAccount.id);
+    if (!toTokenBalance) {
+        toTokenBalance = new TokenBalance(token.id + "-" + toAccount.id);
+        toTokenBalance.token = token.id;
+        toTokenBalance.account = toAccount.id;
+        toTokenBalance.value = BigDecimal.fromString("0");
+    }
+    toTokenBalance.value = toTokenBalance.value.plus(value);
+    toTokenBalance.blockNumber = event.block.number;
+    toTokenBalance.save();
 }

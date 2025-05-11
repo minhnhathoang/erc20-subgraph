@@ -3,13 +3,23 @@ type Token @entity(immutable: false) {
   name: String!
   symbol: String!
   decimals: Int!
+  balances: [TokenBalance!]! @derivedFrom(field: "token")
   approvals: [TokenApproval!]! @derivedFrom(field: "token")
 }
 
 type Account @entity(immutable: false) {
   id: ID!
+  balances: [TokenBalance!]! @derivedFrom(field: "account")
   incomingApprovals: [TokenApproval!]! @derivedFrom(field: "spenderAccount")
   outgoingApprovals: [TokenApproval!]! @derivedFrom(field: "ownerAccount")
+}
+
+type TokenBalance @entity(immutable: false) {
+  id: ID!
+  token: Token!
+  account: Account!
+  value: BigDecimal!
+  blockNumber: BigInt!
 }
 
 type TokenApproval @entity(immutable: false) {
@@ -18,4 +28,5 @@ type TokenApproval @entity(immutable: false) {
   ownerAccount: Account!
   spenderAccount: Account!
   value: BigDecimal!
+  blockNumber: BigInt!
 }
